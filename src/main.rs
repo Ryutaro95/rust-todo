@@ -6,6 +6,8 @@ use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::params;
 use serde::Deserialize;
 
+mod domain;
+
 #[derive(Deserialize)]
 struct AddParams {
     text: String,
@@ -16,15 +18,10 @@ struct DeleteParams {
     id: u32,
 }
 
-struct TodoEntry {
-    id: u32,
-    text: String,
-}
-
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate {
-    entries: Vec<TodoEntry>,
+    entries: Vec<domain::TodoEntry>,
 }
 
 // エラーをまとめる enum を定義する
@@ -55,7 +52,7 @@ async fn index(db: web::Data<Pool<SqliteConnectionManager>>) -> Result<HttpRespo
     let rows = statement.query_map(params![], |row| {
         let id = row.get(0)?;
         let text = row.get(1)?;
-        Ok(TodoEntry { id, text })
+        Ok(domain::TodoEntry { id, text })
     })?;
 
     let mut entries = Vec::new();
